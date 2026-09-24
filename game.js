@@ -532,3 +532,5 @@ window.addEventListener("DOMContentLoaded", () => {
     startGame();
 
 });
+
+console.log("chinaData:", chinaData);
