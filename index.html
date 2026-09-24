@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>中国大陸クエスト</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="game">
+
+    <header>
+        <div class="seal">中</div>
+        <div>
+            <h1>中国大陸クエスト</h1>
+            <p>知識を集めて、中国大陸を制覇せよ。</p>
+        </div>
+    </header>
+
+    <section class="status">
+        <div>
+            <span>Lv.</span>
+            <strong id="level">1</strong>
+        </div>
+
+        <div>
+            <span>EXP</span>
+            <strong id="exp">0</strong>
+        </div>
+
+        <div>
+            <span>訪問都市</span>
+            <strong id="visited">0</strong>
+        </div>
+
+        <div>
+            <span>称号</span>
+            <strong id="title">中国初心者</strong>
+        </div>
+    </section>
+
+    <div class="exp-box">
+        <div class="exp-label">
+            <span>経験値</span>
+            <span id="expText">0 EXP</span>
+        </div>
+
+        <div class="exp-bar">
+            <div id="expBar"></div>
+        </div>
+    </div>
+
+    <main>
+
+        <section id="provinceScreen">
+
+            <h2>省・自治区・直轄市を選択</h2>
+
+            <p class="description">
+                行きたい場所を選んで、クエストを開始しよう。
+            </p>
+
+            <div id="provinceList" class="province-list"></div>
+
+        </section>
+
+
+        <section id="cityScreen" class="hidden">
+
+            <button id="backProvince" class="back-button">
+                ← 省・自治区一覧へ
+            </button>
+
+            <h2 id="provinceTitle"></h2>
+
+            <p class="description">
+                行き先を選択してください。
+            </p>
+
+            <div id="cityList" class="city-list"></div>
+
+        </section>
+
+
+        <section id="quizScreen" class="hidden">
+
+            <div class="quiz-header">
+                <button id="backCity" class="back-button">
+                    ← 都市一覧へ
+                </button>
+
+                <span id="questionNumber"></span>
+            </div>
+
+            <h2 id="cityTitle"></h2>
+
+            <div class="question-box">
+                <p id="question"></p>
+            </div>
+
+            <div id="choices" class="choices"></div>
+
+            <div id="answerMessage"></div>
+
+            <div class="reward">
+                <span>今回の獲得EXP</span>
+                <strong id="rewardExp">0</strong>
+            </div>
+
+        </section>
+
+
+        <section id="resultScreen" class="hidden">
+
+            <div class="result-symbol">✓</div>
+
+            <h2>クエスト完了！</h2>
+
+            <h3 id="resultCity"></h3>
+
+            <p id="resultMessage"></p>
+
+            <div class="result-stats">
+
+                <div>
+                    <span>獲得EXP</span>
+                    <strong id="resultExp"></strong>
+                </div>
+
+                <div>
+                    <span>正解数</span>
+                    <strong id="resultCorrect"></strong>
+                </div>
+
+            </div>
+
+            <button id="resultButton" class="main-button">
+                都市一覧へ戻る
+            </button>
+
+        </section>
+
+    </main>
+
+    <footer>
+        中国大陸クエスト
+    </footer>
+
+</div>
+
+<script src="data.js"></script>
+<script src="game.js"></script>
+
+</body>
+</html>
