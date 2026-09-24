@@ -7,729 +7,627 @@ let correctCount = 0;
 let totalExp = 0;
 let questExp = 0;
 
-let visitedCities = new Set();
-let cityAttempts = {};
+let visitedCities = [];
 
+let questionAttempts = {};
 
-/* =========================
-   ゲーム開始
-========================= */
+// 今回のクエストで出題する5問
+let selectedQuestions = [];
+
+// ==============================
+// ゲーム開始
+// ==============================
 
 function startGame() {
 
-    loadGame();
+```
+loadGame();
 
-    showProvinceScreen();
+updateStatus();
 
-    updateStatus();
+showProvinceScreen();
+```
+
 }
 
-
-/* =========================
-   省・自治区一覧
-========================= */
+// ==============================
+// 地域一覧
+// ==============================
 
 function showProvinceScreen() {
 
-    document.getElementById("provinceScreen").classList.remove("hidden");
-    document.getElementById("cityScreen").classList.add("hidden");
-    document.getElementById("quizScreen").classList.add("hidden");
-    document.getElementById("resultScreen").classList.add("hidden");
+```
+document.getElementById("provinceScreen").classList.remove("hidden");
+document.getElementById("cityScreen").classList.add("hidden");
+document.getElementById("quizScreen").classList.add("hidden");
+document.getElementById("resultScreen").classList.add("hidden");
 
+const list = document.getElementById("provinceList");
 
-    const provinceList =
-        document.getElementById("provinceList");
+list.innerHTML = "";
 
-    provinceList.innerHTML = "";
+const provinces = Object.keys(chinaData);
 
+provinces.forEach(function(province) {
 
-    Object.keys(chinaData).forEach(provinceName => {
+    const button = document.createElement("button");
 
-        const button = document.createElement("button");
+    button.className = "province-button";
 
-        button.className = "province-button";
+    button.textContent = province;
 
-        button.textContent = provinceName;
+    button.addEventListener("click", function() {
 
-
-        button.addEventListener("click", () => {
-
-            showCityScreen(provinceName);
-
-        });
-
-
-        provinceList.appendChild(button);
+        showCityScreen(province);
 
     });
+
+    list.appendChild(button);
+
+});
+```
+
 }
 
+// ==============================
+// 都市一覧
+// ==============================
 
-/* =========================
-   都市一覧
-========================= */
+function showCityScreen(province) {
 
-function showCityScreen(provinceName) {
+```
+currentProvince = province;
 
-    currentProvince = provinceName;
+document.getElementById("provinceScreen").classList.add("hidden");
+document.getElementById("cityScreen").classList.remove("hidden");
+document.getElementById("quizScreen").classList.add("hidden");
+document.getElementById("resultScreen").classList.add("hidden");
 
+document.getElementById("provinceTitle").textContent = province;
 
-    document.getElementById("provinceScreen").classList.add("hidden");
-    document.getElementById("cityScreen").classList.remove("hidden");
-    document.getElementById("quizScreen").classList.add("hidden");
-    document.getElementById("resultScreen").classList.add("hidden");
+const list = document.getElementById("cityList");
 
+list.innerHTML = "";
 
-    document.getElementById("provinceTitle").textContent =
-        provinceName;
+const cities = chinaData[province];
 
+cities.forEach(function(city) {
 
-    const cityList =
-        document.getElementById("cityList");
+    const button = document.createElement("button");
 
-    cityList.innerHTML = "";
+    button.className = "city-button";
 
+    if (visitedCities.includes(city.name)) {
 
-    const cities =
-        chinaData[provinceName].cities;
+        button.classList.add("visited");
 
+        button.innerHTML =
+            city.name +
+            '<span class="visited-mark">✓</span>';
 
-    Object.keys(cities).forEach(cityName => {
+    } else {
 
-        const button = document.createElement("button");
+        button.textContent = city.name;
 
-        button.className = "city-button";
+    }
 
+    button.addEventListener("click", function() {
 
-        const cityKey =
-            `${provinceName}-${cityName}`;
-
-
-        if (visitedCities.has(cityKey)) {
-
-            button.textContent =
-                `✓ ${cityName}`;
-
-            button.classList.add("visited");
-
-        } else {
-
-            button.textContent =
-                cityName;
-        }
-
-
-        button.addEventListener("click", () => {
-
-            startQuiz(
-                provinceName,
-                cityName
-            );
-
-        });
-
-
-        cityList.appendChild(button);
+        startQuiz(city);
 
     });
+
+    list.appendChild(button);
+
+});
+```
+
 }
 
+// ==============================
+// 配列をシャッフル
+// ==============================
 
-/* =========================
-   クイズ開始
-========================= */
+function shuffleArray(array) {
 
-function startQuiz(provinceName, cityName) {
+```
+const shuffled = [...array];
 
-    currentProvince = provinceName;
-    currentCity = cityName;
+for (let i = shuffled.length - 1; i > 0; i--) {
 
-    currentQuestion = 0;
-    correctCount = 0;
-    questExp = 0;
+    const j =
+        Math.floor(Math.random() * (i + 1));
 
+    [shuffled[i], shuffled[j]] =
+        [shuffled[j], shuffled[i]];
 
-    document.getElementById("provinceScreen").classList.add("hidden");
-    document.getElementById("cityScreen").classList.add("hidden");
-    document.getElementById("quizScreen").classList.remove("hidden");
-    document.getElementById("resultScreen").classList.add("hidden");
-
-
-    document.getElementById("cityTitle").textContent =
-        cityName;
-
-
-    document.getElementById("rewardExp").textContent =
-        "0";
-
-
-    showQuestion();
 }
 
+return shuffled;
+```
 
-/* =========================
-   問題表示
-========================= */
+}
+
+// ==============================
+// クイズ開始
+// ==============================
+
+function startQuiz(city) {
+
+```
+currentCity = city;
+
+currentQuestion = 0;
+correctCount = 0;
+questExp = 0;
+
+questionAttempts = {};
+
+
+// --------------------------------
+// 問題をランダムに5問選ぶ
+// --------------------------------
+
+const allQuestions = city.questions;
+
+const shuffledQuestions =
+    shuffleArray(allQuestions);
+
+selectedQuestions =
+    shuffledQuestions.slice(
+        0,
+        Math.min(5, shuffledQuestions.length)
+    );
+
+
+document.getElementById("provinceScreen").classList.add("hidden");
+document.getElementById("cityScreen").classList.add("hidden");
+document.getElementById("quizScreen").classList.remove("hidden");
+document.getElementById("resultScreen").classList.add("hidden");
+
+document.getElementById("cityTitle").textContent =
+    city.name;
+
+showQuestion();
+```
+
+}
+
+// ==============================
+// 問題表示
+// ==============================
 
 function showQuestion() {
 
-    const cityData =
-        chinaData[currentProvince].cities[currentCity];
+```
+if (currentQuestion >= selectedQuestions.length) {
+
+    finishQuiz();
+
+    return;
+
+}
 
 
-    const q =
-        cityData.questions[currentQuestion];
+const questionData =
+    selectedQuestions[currentQuestion];
 
 
-    document.getElementById("questionNumber").textContent =
-        `第 ${currentQuestion + 1} 問 / ${cityData.questions.length} 問`;
+document.getElementById("questionNumber").textContent =
+    `第 ${currentQuestion + 1} 問 / ${selectedQuestions.length} 問`;
 
 
-    document.getElementById("question").textContent =
-        q.question;
+document.getElementById("question").textContent =
+    questionData.question;
+
+
+document.getElementById("answerMessage").textContent =
+    "";
+
+
+const choicesContainer =
+    document.getElementById("choices");
+
+choicesContainer.innerHTML = "";
+
+
+// --------------------------------
+// 選択肢も毎回シャッフル
+// --------------------------------
+
+const choices =
+    shuffleArray(questionData.choices);
+
+
+choices.forEach(function(choice) {
+
+    const button =
+        document.createElement("button");
+
+    button.className =
+        "choice-button";
+
+    button.textContent =
+        choice;
+
+    button.addEventListener("click", function() {
+
+        answerQuestion(
+            choice,
+            button
+        );
+
+    });
+
+    choicesContainer.appendChild(button);
+
+});
+```
+
+}
+
+// ==============================
+// 回答
+// ==============================
+
+function answerQuestion(
+answer,
+clickedButton
+) {
+
+```
+const questionData =
+    selectedQuestions[currentQuestion];
+
+
+const correctAnswer =
+    questionData.answer;
+
+
+if (clickedButton.disabled) {
+    return;
+}
+
+
+// ==============================
+// 正解
+// ==============================
+
+if (answer === correctAnswer) {
+
+    const key = currentQuestion;
+
+
+    questionAttempts[key] =
+        (questionAttempts[key] || 0) + 1;
+
+
+    const attempt =
+        questionAttempts[key];
+
+
+    let earnedExp;
+
+
+    if (attempt === 1) {
+
+        earnedExp = 30;
+
+    } else if (attempt === 2) {
+
+        earnedExp = 10;
+
+    } else {
+
+        earnedExp = 5;
+
+    }
+
+
+    correctCount++;
+
+    questExp += earnedExp;
+
+    totalExp += earnedExp;
+
+
+    clickedButton.classList.add("correct");
 
 
     document.getElementById("answerMessage").textContent =
-        "";
+        `○ 正解！ +${earnedExp} EXP`;
 
 
-    const choicesContainer =
-        document.getElementById("choices");
-
-
-    choicesContainer.innerHTML = "";
-
-
-    /* =========================
-       選択肢をランダム化
-    ========================= */
-
-    const shuffledChoices =
-        [...q.choices];
-
-
-    // Fisher-Yatesシャッフル
-    for (
-        let i = shuffledChoices.length - 1;
-        i > 0;
-        i--
-    ) {
-
-        const j =
-            Math.floor(
-                Math.random() * (i + 1)
-            );
-
-
-        [
-            shuffledChoices[i],
-            shuffledChoices[j]
-        ] =
-        [
-            shuffledChoices[j],
-            shuffledChoices[i]
-        ];
-    }
-
-
-    /* =========================
-       選択肢ボタン作成
-    ========================= */
-
-    shuffledChoices.forEach(choice => {
-
-        const button =
-            document.createElement("button");
-
-
-        button.className =
-            "choice-button";
-
-
-        button.textContent =
-            choice;
-
-
-        button.addEventListener("click", () => {
-
-            answerQuestion(
-                choice,
-                button
-            );
-
-        });
-
-
-        choicesContainer.appendChild(button);
-
-    });
-}
-
-
-/* =========================
-   回答
-========================= */
-
-function answerQuestion(
-    choice,
-    clickedButton
-) {
-
-    const cityData =
-        chinaData[currentProvince].cities[currentCity];
-
-
-    const q =
-        cityData.questions[currentQuestion];
-
-
-    const questionKey =
-        `${currentProvince}-${currentCity}-${currentQuestion}`;
-
-
-    const buttons =
-        document.querySelectorAll(
-            ".choice-button"
-        );
-
-
-    /* =========================
-       正解
-    ========================= */
-
-    if (choice === q.answer) {
-
-        buttons.forEach(button => {
-
-            button.disabled = true;
-
-        });
-
-
-        clickedButton.classList.add(
-            "correct"
-        );
-
-
-        correctCount++;
-
-
-        if (!cityAttempts[questionKey]) {
-
-            cityAttempts[questionKey] = 0;
-
-        }
-
-
-        cityAttempts[questionKey]++;
-
-
-        let gainedExp;
-
-
-        if (
-            cityAttempts[questionKey] === 1
-        ) {
-
-            gainedExp = 30;
-
-        } else if (
-            cityAttempts[questionKey] === 2
-        ) {
-
-            gainedExp = 10;
-
-        } else {
-
-            gainedExp = 5;
-
-        }
-
-
-        totalExp += gainedExp;
-        questExp += gainedExp;
-
-
-        document.getElementById(
-            "answerMessage"
-        ).textContent =
-            `○ 正解！ +${gainedExp} EXP`;
-
-
-        document.getElementById(
-            "rewardExp"
-        ).textContent =
-            questExp;
-
-
-        updateStatus();
-
-        saveGame();
-
-
-        setTimeout(() => {
-
-            currentQuestion++;
-
-
-            if (
-                currentQuestion <
-                cityData.questions.length
-            ) {
-
-                showQuestion();
-
-            } else {
-
-                finishQuiz();
-
-            }
-
-        }, 1000);
-
-
-    }
-
-    /* =========================
-       不正解
-    ========================= */
-
-    else {
-
-        clickedButton.classList.add(
-            "wrong"
-        );
-
-
-        clickedButton.disabled = true;
-
-
-        document.getElementById(
-            "answerMessage"
-        ).textContent =
-            "× 不正解！もう一度挑戦しよう。";
-
-
-        setTimeout(() => {
-
-            clickedButton.disabled = false;
-
-            clickedButton.classList.remove(
-                "wrong"
-            );
-
-        }, 700);
-
-    }
-}
-
-
-/* =========================
-   クイズ終了
-========================= */
-
-function finishQuiz() {
-
-    const cityKey =
-        `${currentProvince}-${currentCity}`;
-
-
-    visitedCities.add(cityKey);
+    disableChoices();
 
 
     saveGame();
 
-
-    document.getElementById(
-        "quizScreen"
-    ).classList.add("hidden");
+    updateStatus();
 
 
-    document.getElementById(
-        "resultScreen"
-    ).classList.remove("hidden");
+    setTimeout(function() {
+
+        currentQuestion++;
+
+        showQuestion();
+
+    }, 900);
 
 
-    document.getElementById(
-        "resultCity"
-    ).textContent =
-        `${currentCity} クエスト完了！`;
+}
+
+// ==============================
+// 不正解
+// ==============================
+
+else {
+
+    clickedButton.classList.add("wrong");
+
+    clickedButton.disabled = true;
 
 
-    document.getElementById(
-        "resultMessage"
-    ).textContent =
-        `中国の知識を ${questExp} EXP 分獲得しました。`;
+    document.getElementById("answerMessage").textContent =
+        "× 不正解！もう一度挑戦しよう。";
+
+}
+```
+
+}
+
+// ==============================
+// 選択肢を無効化
+// ==============================
+
+function disableChoices() {
+
+```
+const buttons =
+    document.querySelectorAll(".choice-button");
 
 
-    document.getElementById(
-        "resultExp"
-    ).textContent =
-        questExp;
+buttons.forEach(function(button) {
 
+    button.disabled = true;
 
-    document.getElementById(
-        "resultCorrect"
-    ).textContent =
-        `${correctCount} / 3`;
+});
+```
+
+}
+
+// ==============================
+// クエスト終了
+// ==============================
+
+function finishQuiz() {
+
+```
+if (!visitedCities.includes(currentCity.name)) {
+
+    visitedCities.push(currentCity.name);
 
 }
 
 
-/* =========================
-   省一覧へ戻る
-========================= */
+saveGame();
 
-function backToProvinces() {
+updateStatus();
 
-    showProvinceScreen();
+
+document.getElementById("quizScreen").classList.add("hidden");
+
+document.getElementById("resultScreen").classList.remove("hidden");
+
+
+document.getElementById("resultCity").textContent =
+    currentCity.name;
+
+
+document.getElementById("resultExp").textContent =
+    questExp + " EXP";
+
+
+document.getElementById("resultCorrect").textContent =
+    correctCount +
+    " / " +
+    selectedQuestions.length;
+
+
+document.getElementById("resultMessage").textContent =
+    "5問のクエストをクリアしました！";
+```
 
 }
 
-
-/* =========================
-   都市一覧へ戻る
-========================= */
-
-function backToCities() {
-
-    showCityScreen(
-        currentProvince
-    );
-
-}
-
-
-/* =========================
-   ステータス更新
-========================= */
+// ==============================
+// ステータス更新
+// ==============================
 
 function updateStatus() {
 
-    const level =
-        Math.floor(totalExp / 100) + 1;
+```
+const level =
+    Math.floor(totalExp / 100) + 1;
 
 
-    let title =
-        "中国初心者";
+document.getElementById("level").textContent =
+    level;
 
 
-    if (level >= 20) {
-
-        title = "中国学大师";
-
-    } else if (level >= 10) {
-
-        title = "中国通";
-
-    } else if (level >= 5) {
-
-        title = "中国旅行家";
-
-    } else if (level >= 3) {
-
-        title = "中国探险家";
-
-    }
+document.getElementById("exp").textContent =
+    totalExp;
 
 
-    document.getElementById(
-        "level"
-    ).textContent =
-        level;
+document.getElementById("visited").textContent =
+    visitedCities.length;
 
 
-    document.getElementById(
-        "exp"
-    ).textContent =
-        totalExp;
+let title = "中国初心者";
 
 
-    document.getElementById(
-        "title"
-    ).textContent =
-        title;
+if (level >= 20) {
 
+    title = "中国学大师";
 
-    document.getElementById(
-        "visited"
-    ).textContent =
-        visitedCities.size;
+} else if (level >= 10) {
 
+    title = "中国通";
 
-    const currentLevelExp =
-        totalExp % 100;
+} else if (level >= 5) {
 
+    title = "中国旅行家";
 
-    document.getElementById(
-        "expText"
-    ).textContent =
-        `${currentLevelExp} / 100 EXP`;
+} else if (level >= 3) {
 
-
-    document.getElementById(
-        "expBar"
-    ).style.width =
-        `${currentLevelExp}%`;
+    title = "中国探险家";
 
 }
 
 
-/* =========================
-   セーブ
-========================= */
-
-function saveGame() {
-
-    const saveData = {
-
-        totalExp: totalExp,
-
-        visitedCities:
-            Array.from(visitedCities),
-
-        cityAttempts:
-            cityAttempts
-
-    };
+document.getElementById("title").textContent =
+    title;
 
 
-    localStorage.setItem(
-        "chinaQuestSave",
-        JSON.stringify(saveData)
-    );
+document.getElementById("expText").textContent =
+    totalExp + " EXP";
+
+
+const progress =
+    totalExp % 100;
+
+
+document.getElementById("expBar").style.width =
+    progress + "%";
+```
 
 }
 
+// ==============================
+// 地域一覧へ
+// ==============================
 
-/* =========================
-   ロード
-========================= */
+function backToProvinces() {
 
-function loadGame() {
-
-    const saved =
-        localStorage.getItem(
-            "chinaQuestSave"
-        );
-
-
-    if (!saved) {
-
-        return;
-
-    }
-
-
-    try {
-
-        const saveData =
-            JSON.parse(saved);
-
-
-        totalExp =
-            saveData.totalExp || 0;
-
-
-        visitedCities =
-            new Set(
-                saveData.visitedCities || []
-            );
-
-
-        cityAttempts =
-            saveData.cityAttempts || {};
-
-
-    } catch (error) {
-
-        console.error(
-            "セーブデータの読み込みに失敗しました。",
-            error
-        );
-
-    }
+```
+showProvinceScreen();
+```
 
 }
 
+// ==============================
+// 都市一覧へ
+// ==============================
 
-/* =========================
-   ゲームリセット
-========================= */
+function backToCities() {
 
-function resetGame() {
+```
+if (currentProvince) {
 
-    const confirmed =
-        confirm(
-            "本当にゲームデータをすべて削除しますか？"
-        );
+    showCityScreen(currentProvince);
 
-
-    if (!confirmed) {
-
-        return;
-
-    }
-
-
-    localStorage.removeItem(
-        "chinaQuestSave"
-    );
-
-
-    totalExp = 0;
-
-    visitedCities =
-        new Set();
-
-    cityAttempts =
-        {};
-
-
-    updateStatus();
+} else {
 
     showProvinceScreen();
 
 }
+```
+
+}
+
+// ==============================
+// セーブ
+// ==============================
+
+function saveGame() {
+
+```
+const saveData = {
+
+    totalExp: totalExp,
+
+    visitedCities: visitedCities
+
+};
 
 
-/* =========================
-   ボタンイベント
-========================= */
+localStorage.setItem(
+    "chinaQuestSave",
+    JSON.stringify(saveData)
+);
+```
 
-document.getElementById(
-    "backProvince"
-).addEventListener(
-    "click",
-    backToProvinces
+}
+
+// ==============================
+// ロード
+// ==============================
+
+function loadGame() {
+
+```
+const saved =
+    localStorage.getItem("chinaQuestSave");
+
+
+if (!saved) {
+    return;
+}
+
+
+try {
+
+    const data =
+        JSON.parse(saved);
+
+
+    totalExp =
+        data.totalExp || 0;
+
+
+    visitedCities =
+        data.visitedCities || [];
+
+
+} catch (error) {
+
+    console.error(
+        "セーブデータの読み込みに失敗しました。",
+        error
+    );
+
+}
+```
+
+}
+
+// ==============================
+// ボタン
+// ==============================
+
+document
+.getElementById("backProvince")
+.addEventListener(
+"click",
+backToProvinces
 );
 
-
-document.getElementById(
-    "backCity"
-).addEventListener(
-    "click",
-    backToCities
+document
+.getElementById("backCity")
+.addEventListener(
+"click",
+backToCities
 );
 
-
-document.getElementById(
-    "resultButton"
-).addEventListener(
-    "click",
-    backToCities
+document
+.getElementById("resultButton")
+.addEventListener(
+"click",
+backToCities
 );
 
+// ==============================
+// 起動
+// ==============================
 
-/* =========================
-   ゲーム起動
-========================= */
-
-window.addEventListener(
-    "DOMContentLoaded",
-    () => {
-
-        startGame();
-
-    }
-);
+startGame();
